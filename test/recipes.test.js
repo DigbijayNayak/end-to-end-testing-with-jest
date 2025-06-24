@@ -287,7 +287,7 @@ describe('test the recipes API', () => {
                 );
             },
         );
-    })
+    });
 
     //test get all recipe
     describe('GET/recipes', () => {
@@ -321,6 +321,54 @@ describe('test the recipes API', () => {
                 );
             },
         );
-    })
+    });
+
+    //test get a particular recipe
+    describe('GET/recipes/:id', () => {
+        it('Retrieve a specified recipes in db',
+            async () => {
+                const res = await request(app)
+                    .get(`/recipes/${id}`);
+                expect(res.statusCode).toEqual(200);
+                expect(res.body).toEqual(
+                    expect.objectContaining({
+                        success: true,
+                        data: expect.any(Object)
+                    }),
+                );
+            },
+        );
+
+        it('it should not retrieve any recipe from the db, invalid id passed',
+            async () => {
+                const res = await request(app)
+                    .get('/recipes/282hsowj8byewiuewgfg6732i2');
+                expect(res.statusCode).toEqual(400);
+                expect(res.body).toEqual(
+                    expect.objectContaining({
+                        success: false,
+                        message: 'Recipe with id 282hsowj8byewiuewgfg6732i2 does not exist'
+                    }),
+                );
+            },
+        );
+
+        it('it should not retrieve any recipe from db, internal server error',
+            async () => {
+                //DATA YOU WANT TO SAVE TO DB
+                jest.spyOn(RecipeService, 'fetchById')
+                    .mockRejectedValueOnce(new Error())
+                const res = await request(app)
+                    .get(`/recipes/${id}`);
+                expect(res.statusCode).toEqual(500);
+                expect(res.body).toEqual(
+                    expect.objectContaining({
+                        success: false,
+                        message: 'Some error occurred while retrieving recipe details.'
+                    }),
+                );
+            },
+        );
+    });
 
 });
