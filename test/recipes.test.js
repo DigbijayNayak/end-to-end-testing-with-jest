@@ -230,9 +230,9 @@ describe('test the recipes API', () => {
                     vegetarian: true
                 };
                 const res = await request(app)
-                .post('/recipes')
-                .send(recipe)
-                .set('Authorization', `Bearer ${token}`);
+                    .post('/recipes')
+                    .send(recipe)
+                    .set('Authorization', `Bearer ${token}`);
                 expect(res.statusCode).toEqual(400);
                 expect(res.body).toEqual(
                     expect.objectContaining({
@@ -244,7 +244,7 @@ describe('test the recipes API', () => {
         );
 
         it('it should not save new recipe to db, invalid token',
-            async ()=> {
+            async () => {
                 //DATA YOU WANT TO SAVE TO DB
                 const recipe = {
                     name: 'chicken nuggets',
@@ -252,9 +252,9 @@ describe('test the recipes API', () => {
                     vegetarian: true
                 };
                 const res = await request(app)
-                .post('/recipes')
-                .send(recipe)
-                .set('Authorizaiton', `Bearer siuogusire7893034pt4`);
+                    .post('/recipes')
+                    .send(recipe)
+                    .set('Authorizaiton', `Bearer siuogusire7893034pt4`);
                 expect(res.statusCode).toEqual(403)
                 expect(res.body).toEqual(
                     expect.objectContaining({
@@ -273,11 +273,11 @@ describe('test the recipes API', () => {
                     vegetarian: true
                 };
                 jest.spyOn(RecipeService, 'saveRecipes')
-                .mockRejectedValueOnce(new Error());
+                    .mockRejectedValueOnce(new Error());
                 const res = await request(app)
-                .post('/recipes')
-                .send(recipes)
-                .set('Authorization', `Bearer ${token}`);
+                    .post('/recipes')
+                    .send(recipes)
+                    .set('Authorization', `Bearer ${token}`);
                 expect(res.statusCode).toEqual(500);
                 expect(res.body).toEqual(
                     expect.objectContaining({
@@ -287,6 +287,40 @@ describe('test the recipes API', () => {
                 );
             },
         );
-        
     })
+
+    //test get all recipe
+    describe('GET/recipes', () => {
+        it('it should retrieve all the recipes in db',
+            async () => {
+                const res = await request(app)
+                    .get('/recipes');
+                expect(res.statusCode).toEqual(200);
+                expect(res.body).toEqual(
+                    expect.objectContaining({
+                        success: true,
+                        data: expect.any(Object),
+                    }),
+                );
+            },
+        );
+
+        it('it should not retrieve any recipe from db, internal server error',
+            async () => {
+                jest.spyOn(RecipeService, 'allRecipes')
+                    .mockRejectedValueOnce(new Error());
+                const res = await request(app)
+                    .get('/recipes')
+                    .send();
+                expect(res.statusCode).toEqual(500);
+                expect(res.body).toEqual(
+                    expect.objectContaining({
+                        success: false,
+                        message: 'Some error occurred while retrieving recipes.'
+                    }),
+                );
+            },
+        );
+    })
+
 });
